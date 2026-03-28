@@ -275,6 +275,14 @@ static void afficherMenu(void)
 }
 
 /* =========================================================
+   Règle de nulle : coups sans prise
+   =========================================================
+   Si aucune capture n'a lieu pendant MAX_COUPS_SANS_PRISE
+   demi-coups consécutifs, la partie est déclarée nulle.
+   ========================================================= */
+#define MAX_COUPS_SANS_PRISE  80
+
+/* =========================================================
    Boucle de jeu
    =========================================================
    modeHumain = JOUEUR_BLANC ou JOUEUR_NOIR => ce joueur est
@@ -286,7 +294,8 @@ static void jouer(int modeHumain, int profondeur)
     Plateau p;
     initialiserPlateau(&p);
 
-    int joueur = JOUEUR_NOIR; /* les noirs ouvrent */
+    int coupsCansPrise = 0;
+    int joueur = JOUEUR_NOIR;
     int tour   = 1;
 
     while (1) {
@@ -297,7 +306,15 @@ static void jouer(int modeHumain, int profondeur)
         afficherPlateauJeu(&p);
         afficherScore(&p);
 
-        /* --- Fin de partie ? --- */
+        /* --- Vérification nulle : coups sans prise --- */
+        if (coupsCansPrise >= MAX_COUPS_SANS_PRISE) {
+            printf("  *** NULLE ***\n");
+            printf("  Aucune prise depuis %d coups consecutifs.\n\n",
+                   MAX_COUPS_SANS_PRISE);
+            break;
+        }
+
+        /* --- Fin de partie par victoire --- */
         if (partieTerminee(&p, joueur)) {
             int gagnant = (joueur == JOUEUR_BLANC) ? JOUEUR_NOIR : JOUEUR_BLANC;
             printf("  *** PARTIE TERMINEE ***\n");
@@ -306,11 +323,24 @@ static void jouer(int modeHumain, int profondeur)
             break;
         }
 
+        /* --- Compter les pièces avant le coup --- */
+        int pieces_avant = compterPieces(&p, JOUEUR_BLANC)
+                         + compterPieces(&p, JOUEUR_NOIR);
+
         /* --- Jouer le coup --- */
         if (modeHumain == joueur)
             p = tourHumain(&p, joueur);
         else
             p = tourIA(&p, joueur, profondeur);
+
+        /* --- Mettre à jour le compteur de coups sans prise --- */
+        int pieces_apres = compterPieces(&p, JOUEUR_BLANC)
+                         + compterPieces(&p, JOUEUR_NOIR);
+
+        if (pieces_apres < pieces_avant)
+            coupsCansPrise = 0;
+        else
+            coupsCansPrise++;
 
         joueur = (joueur == JOUEUR_BLANC) ? JOUEUR_NOIR : JOUEUR_BLANC;
         tour++;
