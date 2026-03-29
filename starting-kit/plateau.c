@@ -4,9 +4,9 @@
 /*
  Dispose les pions en début de partie sur les cases sombres.
  Disposition sur un plateau 8×8 :
-   lignes 0-2  → Noirs  (3 rangées)
-   lignes 3-4  → Vides  (2 rangées centrales)
-   lignes 5-7  → Blancs (3 rangées)
+   lignes 0-2  → Noirs  
+   lignes 3-4  → Vides  
+   lignes 5-7  → Blancs 
  */
 void initialiserPlateau(Plateau *p)
 {
@@ -33,11 +33,12 @@ void initialiserPlateau(Plateau *p)
 }
 
 /*
- * Affiche le plateau en console avec :
- *   - les lettres A-H pour les colonnes
- *   - les chiffres 0-7 pour les lignes
- *   - [ ] pour les cases claires (injouables)
- *   - symboles b/n/B/N/. pour les cases sombres
+ Affiche le plateau en console avec :
+   - les lettres A-H pour les colonnes
+   - les chiffres 0-7 pour les lignes
+   - [ ] pour les cases claires (injouables)
+   - b/n pour les pions noirs et blancs et B/N pour les dames blanches et noires
+   - . pour les cases vides 
  */
 void afficherPlateau(Plateau *p)
 {
