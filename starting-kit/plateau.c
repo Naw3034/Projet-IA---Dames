@@ -2,14 +2,11 @@
 #include "plateau.h"
 
 /*
- * Dispose les pions en début de partie sur les cases sombres.
- * Aux dames on ne joue que sur les cases sombres, c'est-à-dire
- * celles dont la somme (ligne + colonne) est impaire.
- *
- * Disposition sur un plateau 8×8 :
- *   lignes 0-2  → Noirs  (3 rangées)
- *   lignes 3-4  → Vides  (2 rangées centrales)
- *   lignes 5-7  → Blancs (3 rangées)
+ Dispose les pions en début de partie sur les cases sombres.
+ Disposition sur un plateau 8×8 :
+   lignes 0-2  → Noirs  (3 rangées)
+   lignes 3-4  → Vides  (2 rangées centrales)
+   lignes 5-7  → Blancs (3 rangées)
  */
 void initialiserPlateau(Plateau *p)
 {
@@ -19,16 +16,16 @@ void initialiserPlateau(Plateau *p)
         for (j = 0; j < TAILLE; j++) {
 
             if ((i + j) % 2 != 0) {
-                /* Case sombre (jouable) */
+                /* Case sombre donc jouable */
                 if (i < 3) {
-                    p->grille[i][j] = PION_NOIR;      /* 3 premières rangées : Noirs  */
+                    p->grille[i][j] = PION_NOIR;      /* 3 premières rangées : pions noirs  */
                 } else if (i > 4) {
-                    p->grille[i][j] = PION_BLANC;     /* 3 dernières rangées : Blancs */
+                    p->grille[i][j] = PION_BLANC;     /* 3 dernières rangées : pions blancs */
                 } else {
                     p->grille[i][j] = VIDE;           /* 2 rangées centrales : vides  */
                 }
             } else {
-                /* Case claire (injouable) */
+                /* Case claire donc injouable */
                 p->grille[i][j] = VIDE;
             }
         }
@@ -52,15 +49,16 @@ void afficherPlateau(Plateau *p)
         printf(" %c ", 'A' + j);
     printf("\n");
 
+    /* numéro de ligne (1 à 8) */
     for (i = 0; i < TAILLE; i++) {
-        printf(" %d ", i + 1);   /* numéro de ligne (1 à 8) */
+        printf(" %d ", i + 1);   
 
         for (j = 0; j < TAILLE; j++) {
             if ((i + j) % 2 == 0) {
-                /* Case claire : injouable */
+                /* Case claire donc injouable */
                 printf("[ ]");
             } else {
-                /* Case sombre : afficher la pièce */
+                /* Case sombre donc on affiche la pièce */
                 switch (p->grille[i][j]) {
                     case VIDE:          printf(" . "); break;
                     case PION_BLANC:    printf(" b "); break;
