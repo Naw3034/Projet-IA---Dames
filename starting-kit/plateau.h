@@ -1,7 +1,7 @@
 #ifndef PLATEAU_H
 #define PLATEAU_H
 
-/* Taille du damier (8x8 pour les règles anglaises/françaises standard) */
+/* Taille du damier (8x8) */
 #define TAILLE 8
 
 /* États possibles d'une case */
@@ -20,7 +20,7 @@ typedef struct {
     int grille[TAILLE][TAILLE];
 } Plateau;
 
-/* Prototypes */
+/* Fonction */
 void initialiserPlateau(Plateau *p);
 void afficherPlateau(Plateau *p);
 
