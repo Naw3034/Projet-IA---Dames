@@ -7,18 +7,13 @@
 #include "eval.h"
 #include "ia.h"
 
-/* =========================================================
-   Constantes d'affichage
-   ========================================================= */
+/*Constantes d'affichage*/
 #define LIGNE_SEP "  +---+---+---+---+---+---+---+---+"
 
-/* =========================================================
-   Affichage amélioré du plateau
-   =========================================================
+/*Affichage du plateau
    Cases claires  : fond hachuré ":::"
    Cases sombres  : pièce ou " . "
-   Numérotation   : 1-8 pour les lignes, A-H pour les colonnes
-   ========================================================= */
+   Numérotation   : 1-8 pour les lignes, A-H pour les colonnes*/
 static void afficherPlateauJeu(Plateau *p)
 {
     printf("\n");
@@ -47,9 +42,7 @@ static void afficherPlateauJeu(Plateau *p)
     printf("      A   B   C   D   E   F   G   H\n\n");
 }
 
-/* =========================================================
-   Affichage de la légende
-   ========================================================= */
+/* Affichage de la légende*/
 static void afficherLegende(void)
 {
     printf("  Legende : b = pion blanc   |  n = pion noir\n");
@@ -57,9 +50,7 @@ static void afficherLegende(void)
     printf("           ::: = case injouable\n\n");
 }
 
-/* =========================================================
-   Affichage du score matériel
-   ========================================================= */
+/*Affichage du score matériel*/
 static void afficherScore(Plateau *p)
 {
     int nb_pb = 0, nb_db = 0, nb_pn = 0, nb_dn = 0;
@@ -78,9 +69,7 @@ static void afficherScore(Plateau *p)
            nb_pb, nb_db, nb_pn, nb_dn);
 }
 
-/* =========================================================
-   Affichage des coups légaux disponibles
-   ========================================================= */
+/* Affichage des coups légaux disponibles*/
 static void afficherCoupsDisponibles(MoveList *coups)
 {
     printf("  Coups disponibles (%d) :\n", moveListCount(coups));
@@ -105,14 +94,12 @@ static void afficherCoupsDisponibles(MoveList *coups)
     printf("\n");
 }
 
-/* =========================================================
-   Parsing de la saisie humaine
-   =========================================================
+/* Controle de la saisie humaine
+
    Format attendu : "B6 C5"  ou  "b6c5"  (insensible à la casse,
-   l'espace ou le tiret entre les deux cases est optionnel).
+   l'espace ou le tiret entre les deux cases est optionnel)
    Retourne 1 si la saisie est valide et remplit from_x/to_x,
-   0 sinon.
-   ========================================================= */
+   0 sinon*/
 static int parserSaisie(const char *saisie,
                          int *from_row, int *from_col,
                          int *to_row,   int *to_col)
@@ -142,9 +129,7 @@ static int parserSaisie(const char *saisie,
     return 1;
 }
 
-/* =========================================================
-   Valider que le coup saisi est dans la liste légale
-   ========================================================= */
+/* valide que le coup saisi est dans la liste légale*/
 static Move *validerCoup(MoveList *coups,
                           int from_row, int from_col,
                           int to_row,   int to_col)
@@ -159,9 +144,7 @@ static Move *validerCoup(MoveList *coups,
     return NULL;
 }
 
-/* =========================================================
-   Tour du joueur humain
-   ========================================================= */
+/*tour du joueur humain*/
 static Plateau tourHumain(Plateau *p, int joueur)
 {
     MoveList coups;
@@ -205,9 +188,7 @@ static Plateau tourHumain(Plateau *p, int joueur)
     return nouveau;
 }
 
-/* =========================================================
-   Tour de l'IA
-   ========================================================= */
+/*tour de l'IA*/
 static Plateau tourIA(Plateau *p, int joueur, int profondeur)
 {
     printf("  L'IA reflechit");
@@ -239,9 +220,10 @@ static Plateau tourIA(Plateau *p, int joueur, int profondeur)
     return appliquerCoup(p, &r.meilleurCoup);
 }
 
-/* =========================================================
-   Choix du niveau
-   ========================================================= */
+/*Choix du niveau de l'IA
+correspond a la profondeur de l'arbre explorer par l'ia
+Plus il explore l'arbre plus il aura le meilleur coups possible 
+et plus il sera fort (fais augmenter le coût de l'algorithme)*/
 static int choisirProfondeur(void)
 {
     char buf[16];
@@ -258,9 +240,7 @@ static int choisirProfondeur(void)
     return prof;
 }
 
-/* =========================================================
-   Menu principal
-   ========================================================= */
+/*  Menu principal*/
 static void afficherMenu(void)
 {
     printf("+=================================+\n");
@@ -274,21 +254,15 @@ static void afficherMenu(void)
     printf("  Votre choix : ");
 }
 
-/* =========================================================
-   Règle de nulle : coups sans prise
-   =========================================================
+/*Règle de nulle : coups sans prise
    Si aucune capture n'a lieu pendant MAX_COUPS_SANS_PRISE
-   demi-coups consécutifs, la partie est déclarée nulle.
-   ========================================================= */
+   demi-coups consécutifs, la partie est déclarée nulle.*/
 #define MAX_COUPS_SANS_PRISE  80
 
-/* =========================================================
-   Boucle de jeu
-   =========================================================
+/*Boucle de jeu
    modeHumain = JOUEUR_BLANC ou JOUEUR_NOIR => ce joueur est
                 joué par l'humain, l'autre par l'IA.
-   modeHumain = -1 => IA vs IA.
-   ========================================================= */
+   modeHumain = -1 => IA vs IA.*/
 static void jouer(int modeHumain, int profondeur)
 {
     Plateau p;
@@ -306,7 +280,7 @@ static void jouer(int modeHumain, int profondeur)
         afficherPlateauJeu(&p);
         afficherScore(&p);
 
-        /* --- Vérification nulle : coups sans prise --- */
+        /* Vérification nulle : coups sans prise */
         if (coupsCansPrise >= MAX_COUPS_SANS_PRISE) {
             printf("  *** NULLE ***\n");
             printf("  Aucune prise depuis %d coups consecutifs.\n\n",
@@ -314,7 +288,7 @@ static void jouer(int modeHumain, int profondeur)
             break;
         }
 
-        /* --- Fin de partie par victoire --- */
+        /* Fin de partie par victoire */
         if (partieTerminee(&p, joueur)) {
             int gagnant = (joueur == JOUEUR_BLANC) ? JOUEUR_NOIR : JOUEUR_BLANC;
             printf("  *** PARTIE TERMINEE ***\n");
@@ -323,17 +297,17 @@ static void jouer(int modeHumain, int profondeur)
             break;
         }
 
-        /* --- Compter les pièces avant le coup --- */
+        /* Compter les pièces avant le coup */
         int pieces_avant = compterPieces(&p, JOUEUR_BLANC)
                          + compterPieces(&p, JOUEUR_NOIR);
 
-        /* --- Jouer le coup --- */
+        /* Jouer le coup */
         if (modeHumain == joueur)
             p = tourHumain(&p, joueur);
         else
             p = tourIA(&p, joueur, profondeur);
 
-        /* --- Mettre à jour le compteur de coups sans prise --- */
+        /* Mettre à jour le compteur de coups sans prise */
         int pieces_apres = compterPieces(&p, JOUEUR_BLANC)
                          + compterPieces(&p, JOUEUR_NOIR);
 
@@ -351,9 +325,7 @@ static void jouer(int modeHumain, int profondeur)
     afficherScore(&p);
 }
 
-/* =========================================================
-   main
-   ========================================================= */
+
 int main(void)
 {
     char buf[16];
