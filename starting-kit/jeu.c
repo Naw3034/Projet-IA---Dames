@@ -6,10 +6,9 @@
 /* Directions diagonales : haut-gauche, haut-droit, bas-gauche, bas-droit */
 static const int DIRS[4][2] = {{-1,-1},{-1,1},{1,-1},{1,1}};
 
-/* =========================================================
-   Fonctions utilitaires
-   ========================================================= */
+/*Fonctions*/
 
+/*vérifie si la piece est au joueur ou non*/
 int estAuJoueur(int piece, int joueur)
 {
     if (joueur == JOUEUR_BLANC)
@@ -28,6 +27,7 @@ int estDame(int piece)
     return piece == DAME_BLANCHE || piece == DAME_NOIRE;
 }
 
+/*compte le nombre de piece restante sur le plateau du joueur, sert a vérifié si la partie est finie*/
 int compterPieces(Plateau *p, int joueur)
 {
     int count = 0;
@@ -38,7 +38,7 @@ int compterPieces(Plateau *p, int joueur)
     return count;
 }
 
-/* Retourne 1 si la case (r,c) est déjà dans les captures du coup en cours */
+/* Retourne 1 si la case est déjà dans les captures du coup en cours */
 static int dejaCapturer(Move *m, int r, int c)
 {
     for (int i = 0; i < m->num_captures; i++)
@@ -57,20 +57,16 @@ static void enregistrerCoup(MoveList *list, Move *m)
     addMoveLast(list, nouveau);
 }
 
-/* =========================================================
-   Captures récursives — PION
-   ========================================================= */
+/* Capture de pions (récursive)*/
 
 /*
- * Explore récursivement toutes les séquences de captures possibles
- * pour un pion situé en (row, col) sur le plateau p.
- *
- * m         : coup en cours de construction
- * list      : liste où les coups complets sont ajoutés
- *
- * Règle : si le pion atteint la ligne de promotion pendant la rafle,
- * la séquence s'arrête et le coup est enregistré.
- */
+Explore récursivement toutes les séquences de captures possibles
+pour un pion situé en (row, col) sur le plateau p
+m         : coup en cours de construction
+list      : liste où les coups complets sont ajoutés
+si le pion atteint la ligne de promotion pendant la rafle,
+la séquence s'arrête et le coup est enregistré*/
+
 static void capturesPionRec(Plateau *p, int row, int col, int joueur,
                              Move *m, MoveList *list)
 {
@@ -83,12 +79,12 @@ static void capturesPionRec(Plateau *p, int row, int col, int joueur,
         int lr = row + 2*DIRS[d][0]; /* case d'atterrissage      */
         int lc = col + 2*DIRS[d][1];
 
-        if (!DANS_PLATEAU(mr, mc) || !DANS_PLATEAU(lr, lc)) continue;
-        if (!estAdversaire(p->grille[mr][mc], joueur))       continue;
-        if (dejaCapturer(m, mr, mc))                         continue;
-        if (p->grille[lr][lc] != VIDE)                       continue;
+        if (!DANS_PLATEAU(mr, mc) || !DANS_PLATEAU(lr, lc)) continue;    /*vérifie si la case adverse et d'atterrissage est dans le plateau*/
+        if (!estAdversaire(p->grille[mr][mc], joueur))       continue;   /*vérifie si la piece qu'on souhaite manger est bien une piece adverse*/
+        if (dejaCapturer(m, mr, mc))                         continue;   /*vérifie si la piece n'a pas déjà été capturé dans une rafle*/
+        if (p->grille[lr][lc] != VIDE)                       continue;   /*la case d'atterrissage doit être vide*/
 
-        trouve = 1;
+        trouve = 1;   /*on a trouver une prise*/
 
         /* Construire le coup partiel */
         Move copieMove = *m;
@@ -117,15 +113,12 @@ static void capturesPionRec(Plateau *p, int row, int col, int joueur,
         enregistrerCoup(list, m);
 }
 
-/* =========================================================
-   Captures récursives — DAME
-   ========================================================= */
-
+/* Captures récursives  DAME */
 /*
- * Explore récursivement toutes les séquences de captures possibles
- * pour une dame en (row, col).
- * Une dame peut sauter à n'importe quelle distance et atterrir
- * n'importe où au-delà de la pièce capturée (dame volante).
+Explore récursivement toutes les séquences de captures possibles
+pour une dame en (row, col).
+Une dame peut sauter à n'importe quelle distance et atterrir
+n'importe où au-delà de la pièce capturée (dame volante).
  */
 static void capturesDameRec(Plateau *p, int row, int col, int joueur,
                               Move *m, MoveList *list)
@@ -187,9 +180,7 @@ static void capturesDameRec(Plateau *p, int row, int col, int joueur,
         enregistrerCoup(list, m);
 }
 
-/* =========================================================
-   Coups simples — PION (sans capture)
-   ========================================================= */
+/*Coups simples de pion (sans capture)*/
 
 /*
  * Génère les déplacements simples (sans capture) pour un pion
@@ -207,8 +198,8 @@ static void mouvementsPion(Plateau *p, int row, int col, int joueur,
         int nr = row + dr;
         int nc = col + dcols[d];
 
-        if (!DANS_PLATEAU(nr, nc))       continue;
-        if (p->grille[nr][nc] != VIDE)   continue;
+        if (!DANS_PLATEAU(nr, nc))       continue;  /*vérifie si le coup est sur le plateau*/
+        if (p->grille[nr][nc] != VIDE)   continue;  /*vérifie si la case est libre */
 
         Move *move      = moveAlloc();
         move->from_row  = row;
@@ -219,15 +210,9 @@ static void mouvementsPion(Plateau *p, int row, int col, int joueur,
     }
 }
 
-/* =========================================================
-   Coups simples — DAME (sans capture)
-   ========================================================= */
+/* Coups simples de DAME (sans capture)*/
 
-/*
- * Génère les déplacements simples pour une dame en (row, col).
- * La dame peut se déplacer d'autant de cases qu'elle veut
- * en diagonale, dans les 4 directions (dame volante).
- */
+/*La dame se déplace qur toute la diagonale en avant et en arrière*/
 static void mouvementsDame(Plateau *p, int row, int col, MoveList *list)
 {
     for (int d = 0; d < 4; d++) {
@@ -249,16 +234,14 @@ static void mouvementsDame(Plateau *p, int row, int col, MoveList *list)
     }
 }
 
-/* =========================================================
-   Génération de tous les coups légaux
-   ========================================================= */
+/*gnération des coups légaux*/
 
 void genererCoups(Plateau *p, int joueur, MoveList *list)
 {
     MoveList captures;
     initMoveList(&captures);
 
-    /* --- 1. Chercher toutes les captures disponibles --- */
+    /* chercher toutes les captures disponibles*/
     for (int i = 0; i < TAILLE; i++) {
         for (int j = 0; j < TAILLE; j++) {
             if (!estAuJoueur(p->grille[i][j], joueur)) continue;
@@ -280,16 +263,16 @@ void genererCoups(Plateau *p, int joueur, MoveList *list)
         }
     }
 
-    /* --- 2. Si des captures existent : prise obligatoire --- */
+    /* si des captures existent : prise obligatoire */
     if (!moveListIsEmpty(&captures)) {
-        /* Transférer les captures dans la liste de sortie */
+        /* transférer les captures dans la liste de sortie */
         Move *m;
         while ((m = popMoveFirst(&captures)) != NULL)
             addMoveLast(list, m);
         return;
     }
 
-    /* --- 3. Sinon : générer les déplacements simples --- */
+    /* sinon : générer les déplacements simples*/
     for (int i = 0; i < TAILLE; i++) {
         for (int j = 0; j < TAILLE; j++) {
             if (!estAuJoueur(p->grille[i][j], joueur)) continue;
@@ -302,9 +285,7 @@ void genererCoups(Plateau *p, int joueur, MoveList *list)
     }
 }
 
-/* =========================================================
-   Promotion
-   ========================================================= */
+/* Promotion*/
 
 void verifierPromotion(Plateau *p)
 {
@@ -319,39 +300,35 @@ void verifierPromotion(Plateau *p)
     }
 }
 
-/* =========================================================
-   Application d'un coup
-   ========================================================= */
+/*= Application d'un coup*/
 
 Plateau appliquerCoup(Plateau *p, Move *m)
 {
     Plateau nouveau = *p; /* copie du plateau */
 
-    /* 1. Déplacer la pièce */
+    /* déplace la pièce */
     nouveau.grille[m->to_row][m->to_col]     = nouveau.grille[m->from_row][m->from_col];
     nouveau.grille[m->from_row][m->from_col] = VIDE;
 
-    /* 2. Retirer les pièces capturées */
+    /* retirer les pièces capturées */
     for (int i = 0; i < m->num_captures; i++)
         nouveau.grille[m->captures[i][0]][m->captures[i][1]] = VIDE;
 
-    /* 3. Vérifier les promotions */
+    /* vérifie les promotions */
     verifierPromotion(&nouveau);
 
     return nouveau;
 }
 
-/* =========================================================
-   Fin de partie
-   ========================================================= */
+/* Fin de partie*/
 
 int partieTerminee(Plateau *p, int joueur)
 {
-    /* Plus de pièces */
+    /* plus de pièces */
     if (compterPieces(p, joueur) == 0)
         return 1;
 
-    /* Plus de coup légal */
+    /* plus de coup légal */
     MoveList coups;
     initMoveList(&coups);
     genererCoups(p, joueur, &coups);
